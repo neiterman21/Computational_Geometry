@@ -1,22 +1,13 @@
 # Chan's Convex Hull O(n log h) - Tom Switzer <thomas.switzer@gmail.com>
+import sys
+import numpy as np
+#from matplotlib import pyplot as plt
 
 TURN_LEFT, TURN_RIGHT, TURN_NONE = (1, -1, 0)
 
 def turn(p, q, r):
     """Returns -1, 0, 1 if p,q,r forms a right, straight, or left turn."""
     return cmp((q[0] - p[0])*(r[1] - p[1]) - (r[0] - p[0])*(q[1] - p[1]), 0)
-
-def _keep_left(hull, r):
-    while len(hull) > 1 and turn(hull[-2], hull[-1], r) != TURN_LEFT:
-            hull.pop()
-    return (not len(hull) or hull[-1] != r) and hull.append(r) or hull
-
-def _graham_scan(points):
-    """Returns points on convex hull of an array of points in CCW order."""
-    points.sort()
-    lh = reduce(_keep_left, points, [])
-    uh = reduce(_keep_left, reversed(points), [])
-    return lh.extend(uh[i] for i in xrange(1, len(uh) - 1)) or lh
 
 def _rtangent(hull, p):
     """Return the index of the point in hull that the right tangent line from p
@@ -42,37 +33,29 @@ def _rtangent(hull, p):
             l_next = turn(p, hull[l], hull[(l + 1) % len(hull)])
     return l
 
-def _min_hull_pt_pair(hulls):
-    """Returns the hull, point index pair that is minimal."""
-    h, p = 0, 0
-    for i in xrange(len(hulls)):
-        j = min(xrange(len(hulls[i])), key=lambda j: hulls[i][j])
-        if hulls[i][j] < hulls[h][p]:
-            h, p = i, j
-    return (h, p)
+def pars_args():
+    if len(sys.argv) <= 1:
+        print ("There are too few arguments")
+        exit(1)
+    lines = open(sys.argv[1],"r").readlines()
+    merged_line = ""
+    for line in lines:
+        merged_line = merged_line + line
+    merged_line = merged_line.replace('\n'," ").replace('\r',"").replace('\t',"")
+    raw_num_arr = merged_line.strip("\n").split(" ")
+    hull = []
+    for i in range(int(raw_num_arr[0])):
+        hull.append([int(raw_num_arr[2*i + 1]) , int(raw_num_arr[2*i+2])])
+    q = [int(raw_num_arr[-3]), int(raw_num_arr[-2])] 
 
-def _next_hull_pt_pair(hulls, pair):
-    """
-    Returns the (hull, point) index pair of the next point in the convex
-    hull.
-    """
-    p = hulls[pair[0]][pair[1]]
-    next = (pair[0], (pair[1] + 1) % len(hulls[pair[0]]))
-    for h in (i for i in xrange(len(hulls)) if i != pair[0]):
-        s = _rtangent(hulls[h], p)
-        q, r = hulls[next[0]][next[1]], hulls[h][s]
-        t = turn(p, q, r)
-        if t == TURN_RIGHT or t == TURN_NONE and _dist(p, r) > _dist(p, q):
-            next = (h, s)
-    return next
+    return hull , q
 
-def convex_hull(pts):
-    """Returns the points on the convex hull of pts in CCW order."""
-    for m in (1 << (1 << t) for t in xrange(len(pts))):
-        hulls = [_graham_scan(pts[i:i + m]) for i in xrange(0, len(pts), m)]
-        hull = [_min_hull_pt_pair(hulls)]
-        for throw_away in xrange(m):
-            p = _next_hull_pt_pair(hulls, hull[-1])
-            if p == hull[0]:
-                return [hulls[h][i] for h, i in hull]
-            hull.append(p)
+def main():
+    hull , q = pars_args()
+    print(_rtangent(hull , q))
+    data = np.array(hull)
+    x, y = data.T
+  #  plt.scatter(x,y)
+
+if __name__ == "__main__":
+    main()
