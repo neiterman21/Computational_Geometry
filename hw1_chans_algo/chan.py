@@ -1,7 +1,7 @@
 # Chan's Convex Hull O(n log h) - Tom Switzer <thomas.switzer@gmail.com>
 import sys
 import numpy as np
-#from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 
 TURN_LEFT, TURN_RIGHT, TURN_NONE = (1, -1, 0)
 
@@ -41,10 +41,12 @@ def pars_args():
     merged_line = ""
     for line in lines:
         merged_line = merged_line + line
-    merged_line = merged_line.replace('\n'," ").replace('\r',"").replace('\t',"")
+    merged_line = merged_line.replace('\n'," ").replace('\r',"").replace('\t',"").replace('  '," ")
     raw_num_arr = merged_line.strip("\n").split(" ")
+    print(merged_line)
     hull = []
     for i in range(int(raw_num_arr[0])):
+        print(raw_num_arr[2*i + 1], raw_num_arr[2*i+2])
         hull.append([int(raw_num_arr[2*i + 1]) , int(raw_num_arr[2*i+2])])
     q = [int(raw_num_arr[-3]), int(raw_num_arr[-2])] 
 
@@ -52,10 +54,15 @@ def pars_args():
 
 def main():
     hull , q = pars_args()
-    print(_rtangent(hull , q))
+    index = _rtangent(hull , q)
+    print(index)
+    hull.append(q)
     data = np.array(hull)
     x, y = data.T
-  #  plt.scatter(x,y)
+    plt.scatter(x,y)
+    plt.plot([q[0],hull[index][0] ],[q[1], hull[index][1]] , 'k-')
+    plt.show()
 
 if __name__ == "__main__":
     main()
+    raw_input()
