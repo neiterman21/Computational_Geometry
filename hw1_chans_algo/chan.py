@@ -1,28 +1,63 @@
-# Chan's Convex Hull O(n log h) - Tom Switzer <thomas.switzer@gmail.com>
 import sys
-import numpy as np
 from matplotlib import pyplot as plt
 
 TURN_LEFT, TURN_RIGHT, TURN_NONE = (1, -1, 0)
 
-def turn(p, q, r):
+# python3.5 does not supports CMP function.
+# def turn(p, q, r):
+#     """Returns -1, 0, 1 if p,q,r forms a right, straight, or left turn."""
+#     return cmp((q[0] - p[0])*(r[1] - p[1]) - (r[0] - p[0])*(q[1] - p[1]), 0)
+
+def orient(p, q, r):
     """Returns -1, 0, 1 if p,q,r forms a right, straight, or left turn."""
-    return cmp((q[0] - p[0])*(r[1] - p[1]) - (r[0] - p[0])*(q[1] - p[1]), 0)
+    qr = q[0] * r[1] - q[1] * r[0]
+    pr = p[0] * r[1] - p[1] * r[0]
+    pq = p[0] * q[1] - p[1] * q[0]
+    det = qr - pr + pq
+    if det > 0: return 1
+    if det < 0: return -1
+    return 0
+
+def naive_solution(hull, query_point):
+    """ Naive solution, works in O(n^2), we go counterclock-wise and check that 
+    all of the points are from the left of the tangent. """
+    size = len(hull)
+    for i in range(0, size):
+        next_i = (i + 1) % size
+        counter_left = 0
+        counter_right = 0
+        for j in range(0, size):
+            if orient(query_point, hull[i], hull[j]) in [TURN_LEFT]:
+                counter_left += 1
+        if counter_left >= size - 1:
+            return hull[i]
+    return None
+
+def naive_solution_2(hull, query_point):
+    """ Naive solution, works in O(n)"""
+    size = len(hull)
+    for i in range(0, size):
+        next_i = (i + 1) % size
+        prev_i = (i - 1) % size
+        if orient(query_point, hull[i], hull[next_i]) in [TURN_LEFT, TURN_NONE] and \
+            orient(query_point, hull[i], hull[prev_i]) in [TURN_LEFT, TURN_NONE]:
+                return hull[i]
+    return None
 
 def _rtangent(hull, p):
     """Return the index of the point in hull that the right tangent line from p
     to hull touches.
     """
     l, r = 0, len(hull)
-    l_prev = turn(p, hull[0], hull[-1])
-    l_next = turn(p, hull[0], hull[(l + 1) % r])
+    l_prev = orient(p, hull[0], hull[-1])
+    l_next = orient(p, hull[0], hull[(l + 1) % r])
     while l < r:
-        c = (l + r) / 2
-        c_prev = turn(p, hull[c], hull[(c - 1) % len(hull)])
-        c_next = turn(p, hull[c], hull[(c + 1) % len(hull)])
-        c_side = turn(p, hull[l], hull[c])
+        c = int((l + r) / 2)
+        c_prev = orient(p, hull[c], hull[(c - 1) % len(hull)])
+        c_next = orient(p, hull[c], hull[(c + 1) % len(hull)])
+        c_side = orient(p, hull[l], hull[c])
         if c_prev != TURN_RIGHT and c_next != TURN_RIGHT:
-            return c
+            return hull[c]
         elif c_side == TURN_LEFT and (l_next == TURN_RIGHT or
                                       l_prev == l_next) or \
                 c_side == TURN_RIGHT and c_prev == TURN_RIGHT:
@@ -30,39 +65,151 @@ def _rtangent(hull, p):
         else:
             l = c + 1           # Tangent touches right chain
             l_prev = -c_next    # Switch sides
-            l_next = turn(p, hull[l], hull[(l + 1) % len(hull)])
+            l_next = orient(p, hull[l], hull[(l + 1) % len(hull)])
+    return hull[l]
+
+
+def line2numbers(line):
+    """ Function takes string line and converts it into list of integers. """
+    l = [x for x in line.strip("\n").split(" ")]
+    l = filter_(l, lambda a: a != '')
+    l = map_(l, lambda a: int(a))
     return l
 
-def pars_args():
-    if len(sys.argv) <= 1:
-        print ("There are too few arguments")
+def numbers2points(numbers):
+    """ It converts list of integer numbers to list of 2d points. """
+    error_msg(len(numbers) % 2 == 1, "An odd number of numbers was supplied" + 
+                                                  " cannot construct the hull.")
+    return [[numbers[i], numbers[i + 1]] for i in range(0, len(numbers), 2)]
+
+def error_msg(condition, msg):
+    """ Function checks the condition, and if it false then it prints relevant 
+    error on the screen and exits the program. """
+    if condition:
+        print("Error: " + msg)
         exit(1)
-    lines = open(sys.argv[1],"r").readlines()
-    merged_line = ""
-    for line in lines:
-        merged_line = merged_line + line
-    merged_line = merged_line.replace('\n'," ").replace('\r',"").replace('\t',"").replace('  '," ")
-    raw_num_arr = merged_line.strip("\n").split(" ")
-    print(merged_line)
-    hull = []
-    for i in range(int(raw_num_arr[0])):
-        print(raw_num_arr[2*i + 1], raw_num_arr[2*i+2])
-        hull.append([int(raw_num_arr[2*i + 1]) , int(raw_num_arr[2*i+2])])
-    q = [int(raw_num_arr[-3]), int(raw_num_arr[-2])] 
 
-    return hull , q
+def get_input():
+    """ Responsible to verify the input of the program and retrieving an input
+    information."""
 
-def main():
-    hull , q = pars_args()
-    index = _rtangent(hull , q)
-    print(index)
-    hull.append(q)
-    data = np.array(hull)
-    x, y = data.T
-    plt.scatter(x,y)
-    plt.plot([q[0],hull[index][0] ],[q[1], hull[index][1]] , 'k-')
+    # Check the number of supplied arguments
+    error_msg(len(sys.argv) <= 1, "No input file was supplied. ")
+
+    # Verify the the filename is legal and open operation is done. 
+    try:    lines = open(sys.argv[1],"r").readlines()
+    except: error_msg(True, "Could not file {}".format(sys.argv[1]))
+    
+    # Verify that file contains at least 3 lines.
+    error_msg(len(lines) < 3, "The supplied input file has an illegal format")
+    
+    # Construct data
+    total_number_of_points = line2numbers(lines[0])[0]
+
+    line_ = ""
+    for line in lines[1: -1]:   line_ += line.strip("\n")
+    points = numbers2points(line2numbers(line_))
+    # print(points)
+
+    query_point = line2numbers(lines[-1])
+
+    # Verify the content of the file.
+    error_msg(total_number_of_points != len(points), 
+                                "The supplied input file has an illegal format")
+    error_msg(len(query_point) <= 1,
+                                "The supplied input file has an illegal format")
+    
+    # Check if user wants to plot the data on the screen.
+    try:    plot = sys.argv[2] == 'plot'
+    except: pass         
+
+    return total_number_of_points, points, query_point, plot
+
+def plot_state(points, query_point, tangent_point):
+    """ Shows the convex hull and the query point on the screen. """ 
+    x = []
+    y = []
+    for point in points:
+        x.append(point[0])
+        y.append(point[1])
+    x.append(points[0][0])
+    y.append(points[0][1])
+    plt.scatter(x, y);
+    plt.plot(x, y, 'ro-')
+    if tangent_point:    
+        plt.plot([query_point[0], tangent_point[0]], 
+                 [query_point[1], tangent_point[1]], 'bo-')
+    else:
+        plt.plot(query_point[0], query_point[1], 'bo')
     plt.show()
 
+def filter_(iterable, truthy):
+    result = []
+    for el in iterable:
+        if(truthy(el)):
+            result.append(el)
+    return result
+
+def map_(iterable, operation):
+    result = []
+    for el in iterable:
+        result.append(operation(el))
+    return result
+
+def main():
+    tnp, points , query_point, plot = get_input()
+    tangent_point = _rtangent(points, query_point)
+    print("Tangent point: " + str(tangent_point));
+
+    if plot:    plot_state(points, query_point, tangent_point)
+
+
+def orient_test_1():
+    p1 = [0, 0]
+    p2 = [1, 1]
+    p3 = [1, 2]
+    p4 = [2, 2]
+    p5 = [1, -2]
+
+    assert(orient(p1, p2, p3) == 1)
+    assert(orient(p1, p2, p4) == 0)
+    assert(orient(p1, p2, p5) == -1)
+
+def rtangent_vs_naive():
+    tnp, points , query_point, plot = get_input()
+    tangent_point_1 = naive_solution(points, query_point)
+    tangent_point_2 = points[rtangent(points, query_point)]
+    assert(tangent_point_1 == tangent_point_2)
+
+def rtangent_vs_naive_2():
+    tnp, points , query_point, plot = get_input()
+    tangent_point_1 = naive_solution_2(points, query_point)
+    tangent_point_2 = points[rtangent(points, query_point)]
+    assert(tangent_point_1 == tangent_point_2)
+
+def test_naive():
+    tnp, points , query_point, plot = get_input()
+    tangent_point = naive_solution(points, query_point)
+    if plot:    plot_state(points, query_point, tangent_point)
+    print(tangent_point)
+
+def test_naive_2():
+    tnp, points , query_point, plot = get_input()
+    tangent_point = naive_solution_2(points, query_point)
+    if plot:    plot_state(points, query_point, tangent_point)
+    print(tangent_point)
+
+def test_rtangent():
+    tnp, points , query_point, plot = get_input()
+    tangent_point = points[rtangent(points, query_point)]
+    if plot:    plot_state(points, query_point, tangent_point)
+    print(tangent_point)
+
 if __name__ == "__main__":
+    # orient_test_1()
+    # test_naive()
+    # test_naive_2()
+    # rtangent_vs_naive()
+    # rtangent_vs_naive_2()
     main()
-    raw_input()
+
