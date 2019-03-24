@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 
 TURN_LEFT, TURN_RIGHT, TURN_NONE = (1, -1, 0)
 
-# python3.5 does not supports CMP function.
+# # python3.5 does not supports CMP function.
 # def turn(p, q, r):
 #     """Returns -1, 0, 1 if p,q,r forms a right, straight, or left turn."""
 #     return cmp((q[0] - p[0])*(r[1] - p[1]) - (r[0] - p[0])*(q[1] - p[1]), 0)
@@ -30,7 +30,7 @@ def naive_solution(hull, query_point):
             if orient(query_point, hull[i], hull[j]) in [TURN_LEFT]:
                 counter_left += 1
         if counter_left >= size - 1:
-            return hull[i]
+            return i
     return None
 
 def naive_solution_2(hull, query_point):
@@ -41,10 +41,10 @@ def naive_solution_2(hull, query_point):
         prev_i = (i - 1) % size
         if orient(query_point, hull[i], hull[next_i]) in [TURN_LEFT, TURN_NONE] and \
             orient(query_point, hull[i], hull[prev_i]) in [TURN_LEFT, TURN_NONE]:
-                return hull[i]
+                return i
     return None
 
-def _rtangent(hull, p):
+def rtangent(hull, p):
     """Return the index of the point in hull that the right tangent line from p
     to hull touches.
     """
@@ -57,7 +57,7 @@ def _rtangent(hull, p):
         c_next = orient(p, hull[c], hull[(c + 1) % len(hull)])
         c_side = orient(p, hull[l], hull[c])
         if c_prev != TURN_RIGHT and c_next != TURN_RIGHT:
-            return hull[c]
+            return c
         elif c_side == TURN_LEFT and (l_next == TURN_RIGHT or
                                       l_prev == l_next) or \
                 c_side == TURN_RIGHT and c_prev == TURN_RIGHT:
@@ -66,7 +66,7 @@ def _rtangent(hull, p):
             l = c + 1           # Tangent touches right chain
             l_prev = -c_next    # Switch sides
             l_next = orient(p, hull[l], hull[(l + 1) % len(hull)])
-    return hull[l]
+    return l
 
 
 def line2numbers(line):
@@ -120,6 +120,7 @@ def get_input():
                                 "The supplied input file has an illegal format")
     
     # Check if user wants to plot the data on the screen.
+    plot = False
     try:    plot = sys.argv[2] == 'plot'
     except: pass         
 
@@ -158,10 +159,11 @@ def map_(iterable, operation):
 
 def main():
     tnp, points , query_point, plot = get_input()
-    tangent_point = _rtangent(points, query_point)
-    print("Tangent point: " + str(tangent_point));
+    index = rtangent(points, query_point)
 
-    if plot:    plot_state(points, query_point, tangent_point)
+    if plot:    plot_state(points, query_point, points[index])
+    print("Index: " + str(index))
+    print("Tangent point: " + str(points[index]));
 
 
 def orient_test_1():
@@ -177,39 +179,44 @@ def orient_test_1():
 
 def rtangent_vs_naive():
     tnp, points , query_point, plot = get_input()
-    tangent_point_1 = naive_solution(points, query_point)
-    tangent_point_2 = points[rtangent(points, query_point)]
-    assert(tangent_point_1 == tangent_point_2)
+    index1  = naive_solution(points, query_point)
+    index2  = rtangent(points, query_point)
+    assert(index1 == index2)
+    assert(points[index1] == points[index2])
 
 def rtangent_vs_naive_2():
     tnp, points , query_point, plot = get_input()
-    tangent_point_1 = naive_solution_2(points, query_point)
-    tangent_point_2 = points[rtangent(points, query_point)]
-    assert(tangent_point_1 == tangent_point_2)
+    index1 = naive_solution_2(points, query_point)
+    index2 = rtangent(points, query_point)
+    assert(index1 == index2)
+    assert(points[index1] == points[index2])
 
 def test_naive():
     tnp, points , query_point, plot = get_input()
-    tangent_point = naive_solution(points, query_point)
-    if plot:    plot_state(points, query_point, tangent_point)
-    print(tangent_point)
+    index = naive_solution(points, query_point)
+    if plot:    plot_state(points, query_point, points[index])
+    print("index: " + str(index));
+    print("point: " + str(points[index]));
 
 def test_naive_2():
     tnp, points , query_point, plot = get_input()
-    tangent_point = naive_solution_2(points, query_point)
-    if plot:    plot_state(points, query_point, tangent_point)
-    print(tangent_point)
+    index = naive_solution_2(points, query_point)
+    if plot:    plot_state(points, query_point, points[index])
+    print("index: " + str(index));
+    print("point: " + str(points[index]));
 
 def test_rtangent():
     tnp, points , query_point, plot = get_input()
-    tangent_point = points[rtangent(points, query_point)]
-    if plot:    plot_state(points, query_point, tangent_point)
-    print(tangent_point)
+    index = points[rtangent(points, query_point)]
+    if plot:    plot_state(points, query_point, points[index])
+    print("index: " + str(index));
+    print("point: " + str(points[index]));
 
 if __name__ == "__main__":
     # orient_test_1()
     # test_naive()
     # test_naive_2()
     # rtangent_vs_naive()
-    # rtangent_vs_naive_2()
-    main()
+    rtangent_vs_naive_2()
+    # main()
 
