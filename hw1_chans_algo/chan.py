@@ -217,6 +217,6 @@ if __name__ == "__main__":
     # test_naive()
     # test_naive_2()
     # rtangent_vs_naive()
-    rtangent_vs_naive_2()
-    # main()
+    # rtangent_vs_naive_2()
+    main()
 
