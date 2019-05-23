@@ -18,57 +18,6 @@ def orient(p, q, r):
     if det < 0: return -1
     return 0
 
-def naive_solution(hull, query_point):
-    """ Naive solution, works in O(n^2), we go counterclock-wise and check that 
-    all of the points are from the left of the tangent. """
-    size = len(hull)
-    for i in range(0, size):
-        next_i = (i + 1) % size
-        counter_left = 0
-        counter_right = 0
-        for j in range(0, size):
-            if orient(query_point, hull[i], hull[j]) in [TURN_LEFT]:
-                counter_left += 1
-        if counter_left >= size - 1:
-            return i
-    return None
-
-def naive_solution_2(hull, query_point):
-    """ Naive solution, works in O(n)"""
-    size = len(hull)
-    for i in range(0, size):
-        next_i = (i + 1) % size
-        prev_i = (i - 1) % size
-        if orient(query_point, hull[i], hull[next_i]) in [TURN_LEFT, TURN_NONE] and \
-            orient(query_point, hull[i], hull[prev_i]) in [TURN_LEFT, TURN_NONE]:
-                return i
-    return None
-
-def rtangent(hull, p):
-    """Return the index of the point in hull that the right tangent line from p
-    to hull touches.
-    """
-    l, r = 0, len(hull)
-    l_prev = orient(p, hull[0], hull[-1])
-    l_next = orient(p, hull[0], hull[(l + 1) % r])
-    while l < r:
-        c = int((l + r) / 2)
-        c_prev = orient(p, hull[c], hull[(c - 1) % len(hull)])
-        c_next = orient(p, hull[c], hull[(c + 1) % len(hull)])
-        c_side = orient(p, hull[l], hull[c])
-        if c_prev != TURN_RIGHT and c_next != TURN_RIGHT:
-            return c
-        elif c_side == TURN_LEFT and (l_next == TURN_RIGHT or
-                                      l_prev == l_next) or \
-                c_side == TURN_RIGHT and c_prev == TURN_RIGHT:
-            r = c               # Tangent touches left chain
-        else:
-            l = c + 1           # Tangent touches right chain
-            l_prev = -c_next    # Switch sides
-            l_next = orient(p, hull[l], hull[(l + 1) % len(hull)])
-    return l
-
-
 def line2numbers(line):
     """ Function takes string line and converts it into list of integers. """
     l = [x for x in line.strip("\n").split(" ")]
@@ -82,6 +31,7 @@ def numbers2points(numbers):
                                                   " cannot construct the hull.")
     return [[numbers[i], numbers[i + 1]] for i in range(0, len(numbers), 2)]
 
+
 def error_msg(condition, msg):
     """ Function checks the condition, and if it false then it prints relevant 
     error on the screen and exits the program. """
@@ -94,54 +44,66 @@ def get_input():
     information."""
 
     # Check the number of supplied arguments
-    error_msg(len(sys.argv) <= 1, "No input file was supplied. ")
+   # error_msg(len(sys.argv) <= 1, "No input file was supplied. ")
 
     # Verify the the filename is legal and open operation is done. 
-    try:    lines = open(sys.argv[1],"r").readlines()
+    try:    lines = open("input_example.txt","r").readlines()
     except: error_msg(True, "Could not file {}".format(sys.argv[1]))
     
     # Verify that file contains at least 3 lines.
     error_msg(len(lines) < 3, "The supplied input file has an illegal format")
     
     # Construct data
-    total_number_of_points = line2numbers(lines[0])[0]
+    total_number_of_obstical_points = line2numbers(lines[0])[0]
 
     line_ = ""
-    for line in lines[1: -1]:   line_ += line.strip("\n")
-    points = numbers2points(line2numbers(line_))
-    # print(points)
+    for line in lines[1:2]:   line_ += line.strip("\n")
+    obstical_points = numbers2points(line2numbers(line_))
 
-    query_point = line2numbers(lines[-1])
+    total_number_of_poligon_points = line2numbers(lines[2])[0]
+    line_ = ""
+    for line in lines[3:]:   line_ += line.strip("\n")
+    poligon_points = numbers2points(line2numbers(line_))
 
     # Verify the content of the file.
-    error_msg(total_number_of_points != len(points), 
-                                "The supplied input file has an illegal format")
-    error_msg(len(query_point) <= 1,
-                                "The supplied input file has an illegal format")
+    #cerror_msg(total_number_of_points != len(points), 
+    #                            "The supplied input file has an illegal format")
+    #error_msg(len(query_point) <= 1,
+    #                            "The supplied input file has an illegal format")
     
     # Check if user wants to plot the data on the screen.
-    plot = False
-    try:    plot = sys.argv[2] == 'plot'
-    except: pass         
+    plot = True
+   # try:    plot = sys.argv[2] == 'plot'
+   # except: pass         
 
-    return total_number_of_points, points, query_point, plot
+    return total_number_of_poligon_points, poligon_points,total_number_of_obstical_points ,obstical_points, plot
 
-def plot_state(points, query_point, tangent_point):
+def plot_state(tnpp, ppoints , tnop, opointes):
     """ Shows the convex hull and the query point on the screen. """ 
     x = []
     y = []
-    for point in points:
+    for point in ppoints:
         x.append(point[0])
         y.append(point[1])
-    x.append(points[0][0])
-    y.append(points[0][1])
+    x.append(ppoints[0][0])
+    y.append(ppoints[0][1])
     plt.scatter(x, y);
     plt.plot(x, y, 'ro-')
-    if tangent_point:    
-        plt.plot([query_point[0], tangent_point[0]], 
-                 [query_point[1], tangent_point[1]], 'bo-')
-    else:
-        plt.plot(query_point[0], query_point[1], 'bo')
+
+    x = []
+    y = []
+    for point in opointes:
+        x.append(point[0])
+        y.append(point[1])
+    plt.scatter(x, y);
+    plt.plot(x, y , 'bo')
+
+#    if tangent_point:    
+#        plt.plot([query_point[0], tangent_point[0]], 
+#                 [query_point[1], tangent_point[1]], 'bo-')
+#    else:
+#        plt.plot(query_point[0], query_point[1], 'bo')
+
     plt.show()
 
 def filter_(iterable, truthy):
@@ -158,65 +120,56 @@ def map_(iterable, operation):
     return result
 
 def main():
-    tnp, points , query_point, plot = get_input()
-    index = rtangent(points, query_point)
+    tnpp, ppoints , tnop, opointes ,plot = get_input()
+    #index = rtangent(points, query_point)
 
-    if plot:    plot_state(points, query_point, points[index])
+    if plot:    plot_state(tnpp, ppoints , tnop, opointes)
     print("Index: " + str(index))
     print("Tangent point: " + str(points[index]));
 
+def convex_hull(points):
+    """Computes the convex hull of a set of 2D points.
 
-def orient_test_1():
-    p1 = [0, 0]
-    p2 = [1, 1]
-    p3 = [1, 2]
-    p4 = [2, 2]
-    p5 = [1, -2]
+    Input: an iterable sequence of (x, y) pairs representing the points.
+    Output: a list of vertices of the convex hull in counter-clockwise order,
+      starting from the vertex with the lexicographically smallest coordinates.
+    Implements Andrew's monotone chain algorithm. O(n log n) complexity.
+    """
 
-    assert(orient(p1, p2, p3) == 1)
-    assert(orient(p1, p2, p4) == 0)
-    assert(orient(p1, p2, p5) == -1)
+    # Sort the points lexicographically (tuples are compared lexicographically).
+    # Remove duplicates to detect the case we have just one unique point.
+    points = sorted(set(points))
 
-def rtangent_vs_naive():
-    tnp, points , query_point, plot = get_input()
-    index1  = naive_solution(points, query_point)
-    index2  = rtangent(points, query_point)
-    assert(index1 == index2)
-    assert(points[index1] == points[index2])
+    # Boring case: no points or a single point, possibly repeated multiple times.
+    if len(points) <= 1:
+        return points
 
-def rtangent_vs_naive_2():
-    tnp, points , query_point, plot = get_input()
-    index1 = naive_solution_2(points, query_point)
-    index2 = rtangent(points, query_point)
-    assert(index1 == index2)
-    assert(points[index1] == points[index2])
+    # 2D cross product of OA and OB vectors, i.e. z-component of their 3D cross product.
+    # Returns a positive value, if OAB makes a counter-clockwise turn,
+    # negative for clockwise turn, and zero if the points are collinear.
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
 
-def test_naive():
-    tnp, points , query_point, plot = get_input()
-    index = naive_solution(points, query_point)
-    if plot:    plot_state(points, query_point, points[index])
-    print("index: " + str(index));
-    print("point: " + str(points[index]));
+    # Build lower hull 
+    lower = []
+    for p in points:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
+            lower.pop()
+        lower.append(p)
 
-def test_naive_2():
-    tnp, points , query_point, plot = get_input()
-    index = naive_solution_2(points, query_point)
-    if plot:    plot_state(points, query_point, points[index])
-    print("index: " + str(index));
-    print("point: " + str(points[index]));
+    # Build upper hull
+    upper = []
+    for p in reversed(points):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
+            upper.pop()
+        upper.append(p)
 
-def test_rtangent():
-    tnp, points , query_point, plot = get_input()
-    index = points[rtangent(points, query_point)]
-    if plot:    plot_state(points, query_point, points[index])
-    print("index: " + str(index));
-    print("point: " + str(points[index]));
+    # Concatenation of the lower and upper hulls gives the convex hull.
+    # Last point of each list is omitted because it is repeated at the beginning of the other list. 
+    return lower[:-1] + upper[:-1]
+
 
 if __name__ == "__main__":
-    # orient_test_1()
-    # test_naive()
-    # test_naive_2()
-    # rtangent_vs_naive()
-    rtangent_vs_naive_2()
-    # main()
+    
+    main()
 
