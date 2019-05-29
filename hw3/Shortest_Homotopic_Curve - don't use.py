@@ -144,7 +144,7 @@ class Edge:
         pass
 
 
-class Triangel:
+class Triangle:
     
     def __init__(self, p1,p2,p3):
         self.points = [p1,p2,p3]
@@ -238,7 +238,7 @@ def convex_hull(points):
     return lower[:-1] + upper[:-1]
 
 
-if __name__ == "__main__":
-    
-    main()
+# if __name__ == "__main__":
+#
+#     main()
 
