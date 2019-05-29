@@ -119,13 +119,82 @@ def map_(iterable, operation):
         result.append(operation(el))
     return result
 
+class Point:
+
+    def __init__(self, x, y):
+        self.x = x;
+        self.y = y;
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+class Edge:
+    def __init__(self, p1, p2):
+        self.p1 = p1
+        self.p2 = p2
+        self.triangles = []
+
+    def __eq__(self, other):
+        return self.p1 == other.p1 and self.p2 == other.p2
+
+    def set_triangle(self, triangle, orientation):
+        pass
+
+    def is_intersection(self, other):
+        pass
+
+
+class Triangel:
+    
+    def __init__(self, p1,p2,p3):
+        self.points = [p1,p2,p3]
+        self.edges = []
+        self.naighbors = [triangels]
+
+    def construct_edges(self):
+        pass
+
+    def set_triangle(self, triangle, edge):
+        pass
+
+    def is_point_inside(self, q):
+        pass
+
+    def next_triangle(self, edge):
+        pass
+
+def triangulate(points):
+    """
+    Return list of triangles
+    """
+    sorted_point = sort_points(points) #nlog(n)
+    # apply graham scan here
+
+    pass
+
+def get_rout(tirangles, points):
+    """ return list of edges that intersect the triangles and the curve"""
+    pass
+
+def reduce_edges(edges):
+    """ return edges with no duplicates"""
+    pass
+
 def main():
     tnpp, ppoints , tnop, opointes ,plot = get_input()
     #index = rtangent(points, query_point)
+    opoint += getBoxPoints(ppoints)
+    triangels = triangulate(opoints)
+    routEdges = get_rout(triangles , ppoints)
 
     if plot:    plot_state(tnpp, ppoints , tnop, opointes)
     print("Index: " + str(index))
     print("Tangent point: " + str(points[index]));
+
+
+
+
+
 
 def convex_hull(points):
     """Computes the convex hull of a set of 2D points.
