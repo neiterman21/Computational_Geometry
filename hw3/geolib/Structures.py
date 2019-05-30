@@ -1,5 +1,6 @@
 from numpy import dot, array, arccos
 from numpy.linalg import norm
+from FunctionaHelpers import orient
 
 class Point:
 
@@ -7,6 +8,7 @@ class Point:
         self.x = x
         self.y = y
         self.vec = array([x, y])
+        self.out_edges = []
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
@@ -59,12 +61,16 @@ class Edge:
         :param other: Edge
         :return: True if and only if this and other edge has common point.
         """
-        from geolib.Algorithms import orient
         test_orient_1 = \
             orient(self.p1, self.p2, other.p1) * -1 == orient(self.p1, self.p2, other.p2)
         test_orient_2 = \
             orient(other.p1, other.p2, self.p1) * -1 == orient(other.p1, other.p2, self.p2)
         return test_orient_1 and test_orient_2
+    def __repr__(self):
+        return 'Edge[' + str(self.p1) + ", " + str(self.p2) + ']'
+
+    def __str__(self):
+        return repr(self)
 
 
 class Triangle:
@@ -83,7 +89,7 @@ class Triangle:
         :param q: Point
         :return: True if and only if the point inside the triangle.
         """
-        from geolib.Algorithms import orient
+
         return orient(self.p1, self.p2, q) == orient(self.p2, self.p3, q) == orient(self.p3, self.p1, q)
 
     def __eq__(self, other):
@@ -104,6 +110,12 @@ class Triangle:
                 result.append(edge_)
         return result
 
+    def no_point_inside(self,pointes):
+        for point in pointes:
+            if self.is_point_inside(point):
+                return False
+        return True
+
     def __repr__(self):
         return 'Triangle[' + str(self.p1) + ", " + str(self.p2) + ", " + str(self.p3) + ']'
 
@@ -121,4 +133,4 @@ def test():
     print(less_comparator(p2, p3))
 
 
-test()
+#test()
