@@ -40,6 +40,7 @@ def get_input():
         lines = []
         error_msg(True, "Could not open file {}".format(sys.argv[1]))
 
+    print(lines)
     # Verify that file contains at least 3 lines.
     error_msg(len(lines) < 4, "The supplied input file has an illegal format")
 
@@ -53,10 +54,21 @@ def get_input():
     curve_points_line_ += lines[3].strip("\n")
 
     obstacle_points = numbers2points(line2numbers(obstacle_points_line_))
+
     curve_points = numbers2points(line2numbers(curve_points_line_))
 
+    min_x = min(curve_points, key=lambda point: point.x).x
+    min_y = min(curve_points, key=lambda point: point.y).y
+
+    max_x = max(curve_points, key=lambda point: point.x).x
+    max_y = max(curve_points, key=lambda point: point.y).y
+
+    from geolib.Structures import Point
+    obstacle_points += [Point(min_x, min_y), Point(min_x, max_y),
+                        Point(max_x, min_y), Point(max_x, max_y)]
+
     # Verify the content of the file.
-    error_msg(number_of_obstacle_points != len(obstacle_points),
+    error_msg(number_of_obstacle_points + 4 != len(obstacle_points),
               "The supplied input file has an illegal format")
     error_msg(number_of_curve_points != len(curve_points),
               "The supplied input file has an illegal format")
