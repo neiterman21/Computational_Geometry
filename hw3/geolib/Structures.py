@@ -1,6 +1,7 @@
 from numpy import dot, array, arccos
 from numpy.linalg import norm
 
+
 class Point:
 
     def __init__(self, x, y):
@@ -59,12 +60,18 @@ class Edge:
         :param other: Edge
         :return: True if and only if this and other edge has common point.
         """
-        from geolib.Algorithms import orient
+        from Algorithms import orient
         test_orient_1 = \
             orient(self.p1, self.p2, other.p1) * -1 == orient(self.p1, self.p2, other.p2)
         test_orient_2 = \
             orient(other.p1, other.p2, self.p1) * -1 == orient(other.p1, other.p2, self.p2)
         return test_orient_1 and test_orient_2
+
+    def __repr__(self):
+        return "Line[" + str(self.p1) + ", " + str(self.p2) + "]"
+
+    def __str__(self):
+        return repr(self)
 
 
 class Triangle:
@@ -83,7 +90,7 @@ class Triangle:
         :param q: Point
         :return: True if and only if the point inside the triangle.
         """
-        from geolib.Algorithms import orient
+        from Algorithms import orient
         return orient(self.p1, self.p2, q) == orient(self.p2, self.p3, q) == orient(self.p3, self.p1, q)
 
     def __eq__(self, other):

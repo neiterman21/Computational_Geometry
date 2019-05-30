@@ -28,13 +28,16 @@ def sort_points(points):
     merge_sort(points, key=lambda point: point, comparator=less_comparator)
     return [min_point] + points
 
+
 def graham_scan(points):
     stack = [points[0], points[1]]
+    bad_points = []
     for point in points[2:]:
         while len(stack) > 1 and orient(stack[-2], stack[-1], point) < 0:
-            stack.pop()
+            bad_points.append(stack.pop())
         stack.append(point)
-    return stack
+    return stack, bad_points
+
 
 def triangulate(points):
     """
@@ -45,16 +48,39 @@ def triangulate(points):
 
     from Structures import Triangle
     triangles = []
+    hulls = []
     points = sort_points(points)
-    stack = [points[0], points[1]]
-    for point in points[2:]:
-        p_top = stack.pop()
-        p_second_top = stack.pop()
-        triangles.append(Triangle(p_second_top, p_top, point))
-        stack.append(p_top)
-        stack.append(point)
 
-    return triangles, points
+    while len(points) > 2:
+        points = sort_points(points)
+        hull, points = graham_scan(points)
+        hulls.append(hull)
+
+    # bad code don't use!
+    edges = []
+    j = 0
+    from Structures import Edge
+    for i in range(0, len(hulls[1])):
+        prev = hulls[1][(i - 1) % len(hulls[1])]
+        current = hulls[1][i]
+        next = hulls[1][(i + 1) % len(hulls[1])]
+        done = False
+        while not done and j < len(hulls[0]):
+            try:
+                temp_point = hulls[0][j]
+            except:
+                print(i)
+                print(j)
+                print(len(hulls[0]))
+                exit(1)
+            temp_edge = Edge(current, temp_point)
+            if orient(current, next, temp_point) == -1 and orient(current, prev, temp_point) == 1:
+                edges.append(temp_edge)
+                j += 1
+            else:
+                done = True
+
+    return hulls, edges
 
 
 def compute_route(triangles, points):
@@ -72,7 +98,7 @@ def test_sort_points():
     # construct a test data-set
     points = []
     for i in range(10):
-        points.append(Point(randint(0, 30), randint(0, 30)))
+        points.append(Point(randint(0, 100), randint(0, 100)))
 
     print("initial array of points = ")
     print(points)
@@ -88,6 +114,7 @@ def test_sort_points():
     plt.scatter(x, y)
     plt.show()
 
+
 def test_graham_scan():
     from random import randint
     from Structures import Point
@@ -101,7 +128,7 @@ def test_graham_scan():
     print("points")
     print(points)
 
-    convex_hull = graham_scan(points)
+    convex_hull, bad_points = graham_scan(points)
 
     print(convex_hull)
 
@@ -109,11 +136,43 @@ def test_graham_scan():
     py = [point.y for point in points]
     cx = [point.x for point in convex_hull]
     cy = [point.y for point in convex_hull]
+    bx = [point.x for point in bad_points]
+    by = [point.y for point in bad_points]
 
     import matplotlib.pyplot as plt
     plt.scatter(px, py, c='b')
-    plt.scatter(cx, cy, c='r')
+    plt.scatter(bx, by, c='r')
     plt.gca().add_patch(plt.Polygon([point.vec for point in convex_hull], fill=False, ls='-'))
+    plt.show()
+
+
+def test_hull_decomposition():
+    from random import randint
+    from Structures import Point
+
+    # construct a test data-set
+    points = []
+    for i in range(40):
+        points.append(Point(randint(0, 30), randint(0, 30)))
+
+    hulls, edges = triangulate(points)
+
+    print("Hulls")
+    from matplotlib import pyplot as plt
+    import matplotlib.lines as mlines
+    plt.figure()
+    x = [point.x for point in points]
+    y = [point.y for point in points]
+    plt.scatter(x, y, s=20, color='b')
+
+    for hull in hulls:
+        print(hull)
+        plt.gca().add_patch(plt.Polygon([point.vec for point in hull], fill=False, ls='-'))
+
+    print("Edges")
+    for edge in edges:
+        print(edge)
+        # plt.gca().add_patch(mlines.Line2D(edge.p1.vec, edge.p2.vec))
     plt.show()
 
 
@@ -148,4 +207,6 @@ def test_triangulation():
 
 # test_triangulation()
 
-test_graham_scan()
+# test_graham_scan()
+
+test_hull_decomposition()
