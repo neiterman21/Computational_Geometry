@@ -28,6 +28,13 @@ def sort_points(points):
     merge_sort(points, key=lambda point: point, comparator=less_comparator)
     return [min_point] + points
 
+def graham_scan(points):
+    stack = [points[0], points[1]]
+    for point in points[2:]:
+        while len(stack) > 1 and orient(stack[-2], stack[-1], point) < 0:
+            stack.pop()
+        stack.append(point)
+    return stack
 
 def triangulate(points):
     """
@@ -48,7 +55,6 @@ def triangulate(points):
         stack.append(point)
 
     return triangles, points
-
 
 
 def compute_route(triangles, points):
@@ -82,6 +88,34 @@ def test_sort_points():
     plt.scatter(x, y)
     plt.show()
 
+def test_graham_scan():
+    from random import randint
+    from Structures import Point
+
+    # construct a test data-set
+    points = []
+    for i in range(10):
+        points.append(Point(randint(0, 30), randint(0, 30)))
+    points = sort_points(points)
+
+    print("points")
+    print(points)
+
+    convex_hull = graham_scan(points)
+
+    print(convex_hull)
+
+    px = [point.x for point in points]
+    py = [point.y for point in points]
+    cx = [point.x for point in convex_hull]
+    cy = [point.y for point in convex_hull]
+
+    import matplotlib.pyplot as plt
+    plt.scatter(px, py, c='b')
+    plt.scatter(cx, cy, c='r')
+    plt.gca().add_patch(plt.Polygon([point.vec for point in convex_hull], fill=False, ls='-'))
+    plt.show()
+
 
 def test_triangulation():
 
@@ -112,4 +146,6 @@ def test_triangulation():
 
 # test_sort_points()
 
-test_triangulation()
+# test_triangulation()
+
+test_graham_scan()
