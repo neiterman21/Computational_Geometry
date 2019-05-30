@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 
 def line2numbers(line):
     """ Function takes string line and converts it into list of integers. """
+    from FunctionaHelpers import filter_, map_
     l = [x for x in line.strip("\n").split(" ")]
     l = filter_(l, lambda a: a != '')
     l = map_(l, lambda a: int(a))
@@ -102,29 +103,3 @@ def plot_state(obstacle_points, curve_points):
     plt.plot(cx, cy, "bo-", ox, oy, "ro")
     plt.show()
 
-
-def filter_(iterable, truthy):
-    """
-    Helper function. Functional programming - filter.
-    :param iterable: Array to filter
-    :param truthy: The condition to filter by.
-    :return: New filtered array that contains elements that satisfy the truthy.
-    """
-    result = []
-    for el in iterable:
-        if truthy(el):
-            result.append(el)
-    return result
-
-
-def map_(iterable, operation):
-    """
-    Helper function. Functional programming - map.
-    :param iterable: Array to map to.
-    :param operation: The operation that the map function should perform.
-    :return: New array after the map operation.
-    """
-    result = []
-    for el in iterable:
-        result.append(operation(el))
-    return result

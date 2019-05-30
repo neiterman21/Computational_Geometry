@@ -1,8 +1,12 @@
+from numpy import dot, array, arccos
+from numpy.linalg import norm
+
 class Point:
 
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.vec = array([x, y])
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
@@ -13,11 +17,26 @@ class Point:
     def __str__(self):
         return repr(self)
 
-    def __le__(self, other):
-        pass
+    @staticmethod
+    def less(p1, p2):
+        return p1.x < p2.x or (p1.x == p2.x and p1.y < p2.y)
 
-    def __ge__(self, other):
-        pass
+    @staticmethod
+    def less_radial(axis_point):
+        def less(p1, p2):
+            u = p1.vec - axis_point.vec
+            v = p2.vec - axis_point.vec
+            axis = array([0, -1])
+
+            alpha1 = arccos(dot(u, axis)/norm(u)/norm(axis))
+            alpha2 = arccos(dot(v, axis)/norm(v)/norm(axis))
+
+            if alpha1 < alpha2:
+                return True
+            elif alpha1 == alpha2:
+                return norm(u) < norm(v)
+            return False
+        return less
 
 
 class Edge:
@@ -31,6 +50,9 @@ class Edge:
     def __eq__(self, other):
         return (self.p1 == other.p1 and self.p2 == other.p2) \
                or (self.p2 == other.p1 and self.p1 == other.p2)
+
+    def __ne__(self, other):
+        return not self == other
 
     def is_intersect(self, other):
         """
@@ -53,6 +75,7 @@ class Triangle:
         self.p3 = p3
         self.edges = [Edge(p1, p2), Edge(p2, p3), Edge(p3, p1)]
         self.adj_triangles = []
+        self.vec = [p1.vec, p2.vec, p3.vec]
 
     def is_point_inside(self, q):
         """
@@ -81,6 +104,21 @@ class Triangle:
                 result.append(edge_)
         return result
 
+    def __repr__(self):
+        return 'Triangle[' + str(self.p1) + ", " + str(self.p2) + ", " + str(self.p3) + ']'
+
+    def __str__(self):
+        return repr(self)
 
 
+def test():
+    less_comparator = Point.less_radial(Point(1, 2))
+    p1 = Point(3,5)
+    p2 = Point(5,3)
+    p3 = Point(10, 6)
 
+    print(less_comparator(p1, p2))
+    print(less_comparator(p2, p3))
+
+
+test()
