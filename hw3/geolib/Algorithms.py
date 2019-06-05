@@ -1,11 +1,16 @@
 
 import matplotlib.pyplot as plt
-from FunctionaHelpers import extrema, merge_sort, filter_
+from FunctionaHelpers import *
 from Structures import *
 from random import randint
 
 
 
+def sort_by_x(point):
+    return point.x
+
+def build_first_triangle(points):
+    return Triangle(points[0] , points[1], points[2])
 
 def sort_points(points):
     """ This function sorts the list of points by radial order, it does so w.r.t to the minimal point
@@ -30,25 +35,49 @@ def graham_scan(points):
         stack.append(point)
     return stack
 
+def add_point(stack , point , orient_):
+    edges = []
+    if orient_ == TURN_RIGHT:
+        edges.append(Edge(stack[-1],point))
+    while True:
+        if (orient(stack[-2] ,stack[-1] , point ) != orient_):
+            stack.pop()
+            edges.append(Edge(stack[-1],point))
+
+        if len(stack) < 2:
+            edges.append(Edge(stack[-1],point))
+            stack.append(point)
+            return edges
+
+        if (orient(stack[-2] ,stack[-1] , point ) == orient_):
+            break
+    edges.append(Edge(stack[-1],point))
+    stack.append(point)
+    return edges
+
+
 def triangulate(points):
     """
     This function takes as input a list of Points.
     :param points: List of points.
     :return: List of triangles.
     """
-
-
+    edges = []
     triangles = []
-    points = sort_points(points)
-    stack = [points[0], points[1]]
-    for point in points[2:]:
-        p_top = stack.pop()
-        p_second_top = stack.pop()
-        triangles.append(Triangle(p_second_top, p_top, point))
-        stack.append(p_top)
-        stack.append(point)
+    points.sort(key = sort_by_x)
+    print(points)
+    triangles.append(build_first_triangle(points))
+    edges.extend(triangles[0].edges)
 
-    return triangles, points
+    buttom_stack = [points[0] , points[1] , points[2]]
+    top_stack = [points[0] , points[1] , points[2]]
+
+
+    for point in points[3:]:
+        edges.extend(add_point(top_stack , point , TURN_RIGHT))
+        edges.extend(add_point(buttom_stack , point , TURN_LEFT))
+
+    return triangles, edges
 
 def built_curv_from_points(points):
     '''
@@ -164,19 +193,21 @@ def test_triangulation():
     for i in range(10):
         points.append(Point(randint(0, 30), randint(0, 30)))
 
-    triangles, points = triangulate(points)
+    triangles, edges = triangulate(points)
 
-    print(points)
+    fig , ax0 = plt.subplots(1)
 
-    plt.figure()
     x = [point.x for point in points]
     y = [point.y for point in points]
-    plt.scatter(x, y, s=20, color='b')
+    ax0.scatter(x, y, s=20, color='b')
 
-    print("Triangles:")
-    for t in triangles:
-        print(t)
-        plt.gca().add_patch(plt.Polygon(t.vec, fill=False, ls='-'))
+    for edge in edges:
+        ax0.plot([edge.p1.x , edge.p2.x] , [edge.p1.y, edge.p2.y])
+
+    #print("Triangles:")
+    #for t in triangles:
+    #    print(t)
+    #    plt.gca().add_patch(plt.Polygon(t.vec, fill=False, ls='-'))
 
     plt.show()
 
@@ -246,7 +277,7 @@ def test_compute_route():
 
 # test_sort_points()
 
-# test_triangulation()
+test_triangulation()
 
 #test_graham_scan()
-test_compute_route()
+#test_compute_route()
