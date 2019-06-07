@@ -1,9 +1,5 @@
-def sort_by_x(point):
-    return point.x
-
-
-def build_first_triangle(points):
-    return Triangle(points[0], points[1], points[2])
+from hw3.geolib.Structures import *
+from hw3.geolib.FunctionaHelpers import *
 
 
 def sort_points(points):
@@ -49,6 +45,9 @@ def triangulate_(points):
             stack_.append(curr_point)
         i += 1
 
+    edges = edges[:-2]
+    for edge in edges:
+        print(edge)
     return triangles, edges
 
 

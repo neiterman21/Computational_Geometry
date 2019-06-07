@@ -112,28 +112,15 @@ class Triangle:
                 result.append(edge_)
         return result
 
-    def no_point_inside(self,pointes):
-        for point in pointes:
+    def no_point_inside(self, points):
+        for point in points:
             if self.is_point_inside(point):
                 return False
         return True
 
     def __repr__(self):
-        return 'Triangle[' + 'Points['+ str(self.p1) + ", " + str(self.p2) + ", " + str(self.p3) + '], Edges[' \
+        return 'Triangle[' + 'Points[' + str(self.p1) + ", " + str(self.p2) + ", " + str(self.p3) + '], Edges[' \
                + str(self.edges[0]) + ',' + str(self.edges[1]) + ',' + str(self.edges[2]) + ']]'
 
     def __str__(self):
         return repr(self)
-
-
-def test():
-    less_comparator = Point.less_radial(Point(1, 2))
-    p1 = Point(3,5)
-    p2 = Point(5,3)
-    p3 = Point(10, 6)
-
-    print(less_comparator(p1, p2))
-    print(less_comparator(p2, p3))
-
-
-#test()

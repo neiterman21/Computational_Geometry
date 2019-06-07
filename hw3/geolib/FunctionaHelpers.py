@@ -1,7 +1,6 @@
 TURN_LEFT, TURN_RIGHT, TURN_NONE = (1, -1, 0)
 
 
-
 def extrema(iterable, key=None, comparator=None, type_='min'):
 
     if not key or not comparator:

@@ -31,16 +31,16 @@ def test_triangulation():
     for i in range(10):
         points.append(Point(randint(0, 20), randint(0, 20)))
 
-    points = [
-        Point(2, 10),
-        Point(4, 5),
-        Point(10, 3),
-        Point(15, 5),
-        Point(10, 8),
-        Point(11, 9),
-        Point(13, 10),
-        Point(16, 14)
-    ]
+    # points = [
+    #     Point(2, 10),
+    #     Point(4, 5),
+    #     Point(10, 3),
+    #     Point(15, 5),
+    #     Point(10, 8),
+    #     Point(11, 9),
+    #     Point(13, 10),
+    #     Point(16, 14)
+    # ]
 
     # points = [
     #     Point(1, 9),
