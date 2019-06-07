@@ -5,12 +5,13 @@ from Structures import *
 from random import randint
 
 
-
 def sort_by_x(point):
     return point.x
 
+
 def build_first_triangle(points):
     return Triangle(points[0] , points[1], points[2])
+
 
 def sort_points(points):
     """ This function sorts the list of points by radial order, it does so w.r.t to the minimal point
@@ -27,6 +28,7 @@ def sort_points(points):
     merge_sort(points, key=lambda point: point, comparator=less_comparator)
     return [min_point] + points
 
+
 def graham_scan(points):
     stack = [points[0], points[1]]
     for point in points[2:]:
@@ -34,6 +36,7 @@ def graham_scan(points):
             stack.pop()
         stack.append(point)
     return stack
+
 
 def add_point(stack , point , orient_):
     edges = []
@@ -56,28 +59,39 @@ def add_point(stack , point , orient_):
     return edges
 
 
-def triangulate(points):
-    """
-    This function takes as input a list of Points.
-    :param points: List of points.
-    :return: List of triangles.
-    """
+def triangulate_(points):
     edges = []
     triangles = []
-    points.sort(key = sort_by_x)
+    points = sort_points(points)
+
+    print("points = ")
     print(points)
-    triangles.append(build_first_triangle(points))
-    edges.extend(triangles[0].edges)
 
-    buttom_stack = [points[0] , points[1] , points[2]]
-    top_stack = [points[0] , points[1] , points[2]]
+    axis_point = points[0]
 
-
-    for point in points[3:]:
-        edges.extend(add_point(top_stack , point , TURN_RIGHT))
-        edges.extend(add_point(buttom_stack , point , TURN_LEFT))
+    stack_ = [points[0], points[1]]
+    edges.append(Edge(points[0], points[1]))
+    prev_triangle = None
+    i = 2
+    while i <= len(points):
+        curr_point = points[i % len(points)]
+        edges.append(Edge(stack_[-1], curr_point))
+        edges.append(Edge(axis_point, curr_point))
+        curr_triangle = Triangle(axis_point, stack_[-1], curr_point)
+        if orient(stack_[-2], stack_[-1], curr_point) == TURN_LEFT:
+            stack_.append(curr_point)
+            triangles.append([prev_triangle, curr_triangle])
+            prev_triangle = curr_triangle
+        elif orient(stack_[-2], stack_[-1], curr_point) == TURN_RIGHT:
+            top = stack_[-1]
+            while len(stack_) > 1 and orient(curr_point, stack_[-1], stack_[-2]) == TURN_LEFT:
+                edges.append(Edge(curr_point, stack_[-2]))
+                stack_.pop()
+            stack_.append(curr_point)
+        i += 1
 
     return triangles, edges
+
 
 def built_curv_from_points(points):
     '''
@@ -191,9 +205,33 @@ def test_triangulation():
     # construct a test data-set
     points = []
     for i in range(10):
-        points.append(Point(randint(0, 30), randint(0, 30)))
+        points.append(Point(randint(0, 20), randint(0, 20)))
 
-    triangles, edges = triangulate(points)
+    points = [
+        Point(2, 10),
+        Point(4, 5),
+        Point(10, 3),
+        Point(15, 5),
+        Point(10, 8),
+        Point(11, 9),
+        Point(13, 10),
+        Point(16, 14)
+    ]
+
+    # points = [
+    #     Point(1, 9),
+    #     Point(9, 3),
+    #     Point(18, 3),
+    #     Point(7, 8),
+    #     Point(13, 11),
+    #     Point(10, 14),
+    #     Point(19, 20),
+    #     Point(15, 20),
+    #     Point(4, 17),
+    #     Point(3, 20)
+    # ]
+
+    triangles, edges = triangulate_(points)
 
     fig , ax0 = plt.subplots(1)
 

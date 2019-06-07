@@ -2,6 +2,7 @@ from numpy import dot, array, arccos
 from numpy.linalg import norm
 from FunctionaHelpers import orient
 
+
 class Point:
 
     def __init__(self, x, y):
@@ -66,6 +67,7 @@ class Edge:
         test_orient_2 = \
             orient(other.p1, other.p2, self.p1) * -1 == orient(other.p1, other.p2, self.p2)
         return test_orient_1 and test_orient_2
+
     def __repr__(self):
         return 'Edge[' + str(self.p1) + ", " + str(self.p2) + ']'
 
@@ -117,7 +119,8 @@ class Triangle:
         return True
 
     def __repr__(self):
-        return 'Triangle[' + str(self.p1) + ", " + str(self.p2) + ", " + str(self.p3) + ']'
+        return 'Triangle[' + 'Points['+ str(self.p1) + ", " + str(self.p2) + ", " + str(self.p3) + '], Edges[' \
+               + str(self.edges[0]) + ',' + str(self.edges[1]) + ',' + str(self.edges[2]) + ']]'
 
     def __str__(self):
         return repr(self)
