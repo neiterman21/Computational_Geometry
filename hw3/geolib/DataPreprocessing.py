@@ -55,14 +55,7 @@ def get_input():
 
     curve_points = numbers2points(line2numbers(curve_points_line_))
 
-    min_x = min(curve_points, key=lambda point: point.x).x
-    min_y = min(curve_points, key=lambda point: point.y).y
-
-    max_x = max(curve_points, key=lambda point: point.x).x
-    max_y = max(curve_points, key=lambda point: point.y).y
-
-    obstacle_points += [Point(min_x, min_y), Point(min_x, max_y),
-                        Point(max_x, min_y), Point(max_x, max_y)]
+    obstacle_points += bound_curve(curve_points)
 
     # Verify the content of the file.
     error_msg(number_of_obstacle_points + 4 != len(obstacle_points),

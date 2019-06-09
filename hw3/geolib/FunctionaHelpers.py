@@ -1,3 +1,5 @@
+import numpy as np
+
 TURN_LEFT, TURN_RIGHT, TURN_NONE = (1, -1, 0)
 
 
@@ -90,3 +92,25 @@ def map_(iterable, operation):
     for el in iterable:
         result.append(operation(el))
     return result
+
+
+def bound_curve(curve_points):
+    from hw3.geolib.Structures import Point
+
+    min_x = min(curve_points, key=lambda point: point.x).x - 1
+    min_y = min(curve_points, key=lambda point: point.y).y - 1
+
+    max_x = max(curve_points, key=lambda point: point.x).x + 1
+    max_y = max(curve_points, key=lambda point: point.y).y + 1
+
+    return [Point(min_x, min_y), Point(min_x, max_y), Point(max_x, min_y), Point(max_x, max_y)]
+
+
+def point_on_line(e_start, e_end, p):
+    if orient(e_start, e_end, p) == 0:
+        v = np.subtract(p.vec, e_start.vec)
+        u = np.subtract(e_end.vec, e_start.vec)
+        if np.linalg.norm(v) < np.linalg.norm(u):
+            return True
+    return False
+
