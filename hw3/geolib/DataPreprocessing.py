@@ -7,7 +7,7 @@ from hw3.geolib.Structures import *
 def line2numbers(line):
     """ Function takes string line and converts it into list of integers. """
     # I damn love functional programming
-    return map_(filter_([x for x in line.strip("\n").split(" ")], lambda a: a != ''), lambda a: int(a))
+    return map_(filter_([x for x in line.strip("\n").split(" ")], lambda a: a != ''), lambda a: float(a))
 
 
 def numbers2points(numbers):
@@ -55,7 +55,7 @@ def get_input():
 
     curve_points = numbers2points(line2numbers(curve_points_line_))
 
-    obstacle_points += bound_curve(curve_points)
+    obstacle_points += compute_big_rectangle(obstacle_points + curve_points)
 
     # Verify the content of the file.
     error_msg(number_of_obstacle_points + 4 != len(obstacle_points),
@@ -73,21 +73,35 @@ def get_input():
     return obstacle_points, curve_points, plot
 
 
-def plot_state(obstacle_points, curve_points):
+def plot_state(obstacle_points, curve_points, triangles, route):
     """ Shows the convex hull and the query point on the screen. """
-    ox = []
-    oy = []
+    # plot results on the screen
+    fig, ax0 = plt.subplots(1)
 
-    cx = []
-    cy = []
+    # plot the obstacle points
+    px = [point.x for point in obstacle_points]
+    py = [point.y for point in obstacle_points]
+    ax0.scatter(px[:-4], py[:-4], s=20, color='b')
+    ax0.scatter(px[-4:], py[-4:], s=20, color='red')
+    for i in range(len(obstacle_points)):
+        ax0.annotate(obstacle_points[i].label, (px[i], py[i]))
 
-    for point in obstacle_points:
-        ox.append(point.x)
-        oy.append(point.y)
+    # plot the triangles
+    for t in triangles:
+        # print("triangle=" + str(t) + ", adj=" + str(t.adj_triangles))
+        plt.gca().add_patch(plt.Polygon(t.points_vec, fill=False, ls='-'))
 
-    for point in curve_points:
-        cx.append(point.x)
-        cy.append(point.y)
+    # plot the curve on the screen
+    cpx = [point.x for point in curve_points]
+    cpy = [point.y for point in curve_points]
+    ax0.plot(cpx, cpy, c='g')
+    from hw3.geolib.Algorithms import make_curve
 
-    plt.plot(cx, cy, "bo-", ox, oy, "ro")
+    for edge in make_curve(curve_points):
+        ax0.plot([edge.p1.x, edge.p2.x], [edge.p1.y, edge.p2.y], c='g')
+
+    # plot the reduced route on the screen
+    for edge in route:
+        ax0.plot([edge.p1.x, edge.p2.x], [edge.p1.y, edge.p2.y], c='b', linewidth=2)
+
     plt.show()

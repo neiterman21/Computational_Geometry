@@ -94,14 +94,16 @@ def map_(iterable, operation):
     return result
 
 
-def bound_curve(curve_points):
+def compute_big_rectangle(points):
+
     from hw3.geolib.Structures import Point
+    from math import pi
 
-    min_x = min(curve_points, key=lambda point: point.x).x - 1
-    min_y = min(curve_points, key=lambda point: point.y).y - 1
+    min_x = min(points, key=lambda point: point.x).x - pi/4
+    min_y = min(points, key=lambda point: point.y).y - pi/4
 
-    max_x = max(curve_points, key=lambda point: point.x).x + 1
-    max_y = max(curve_points, key=lambda point: point.y).y + 1
+    max_x = max(points, key=lambda point: point.x).x + pi/4
+    max_y = max(points, key=lambda point: point.y).y + pi/4
 
     return [Point(min_x, min_y), Point(min_x, max_y), Point(max_x, min_y), Point(max_x, max_y)]
 
